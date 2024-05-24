@@ -3,18 +3,18 @@ kubernetesClusterDomain: cluster.local
 # Credenciais
 cred:
   api:
-    password: 123
-    username: wazuh-wui
+    password: "123"
+    username: "wazuh-wui"
   authd:
-    password: password
+    password: "password"
   cluster:
-    key: 123
+    key: "123"
   dashboard:
-    password: 123
-    username: kibanaserver
+    password: "123"
+    username: "kibanaserver"
   indexer:
-    password: 123
-    username: admin
+    password: "123"
+    username: "admin"
 
 # Svc for cluster (master + worker)
 cluster:

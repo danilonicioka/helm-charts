@@ -9,6 +9,7 @@ maintainers:
 name: ocs
 dependencies:
   - name: mysql
+    version: 1.6.9
 sources:
 - https://github.com/danilonicioka/helm_charts
 type: application
