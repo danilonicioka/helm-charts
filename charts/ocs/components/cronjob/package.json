@@ -1,0 +1,16 @@
+{
+  "name": "cronjob-mail",
+  "version": "1.0.0",
+  "description": "",
+  "main": "cronjob.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Elienai Soares",
+  "license": "ISC",
+  "dependencies": {
+    "@kubernetes/client-node": "^0.18.1",
+    "dotenv": "^16.0.3"
+  }
+}

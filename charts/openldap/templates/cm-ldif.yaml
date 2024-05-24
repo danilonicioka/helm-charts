@@ -1,0 +1,17 @@
+{{- if .Values.customLdifFiles }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "openldap.fullname" . }}-ldifs
+  labels:
+    app: {{ template "openldap.name" . }}
+    chart: {{ template "openldap.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+
+data:
+{{ (.Files.Glob "ldifs/*").AsConfig | indent 2 }}
+
+...
+{{- end }}

@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ include "wazuh.fullname" . }}-indexer-certs
+  labels:
+  {{- include "wazuh.labels" . | nindent 4 }}
+data:
+  admin-key.pem: |-
+{{ .Files.Get "files/certs/admin-key.pem" | b64enc | indent 4 }}
+  admin.pem: |-
+{{ .Files.Get "files/certs/admin.pem" | b64enc | indent 4 }}
+  dashboard-key.pem: |-
+{{ .Files.Get "files/certs/dashboard-key.pem" | b64enc | indent 4 }}
+  dashboard.pem: |-
+{{ .Files.Get "files/certs/dashboard.pem" | b64enc | indent 4 }}
+  filebeat-key.pem: |-
+{{ .Files.Get "files/certs/filebeat-key.pem" | b64enc | indent 4 }}
+  filebeat.pem: |-
+{{ .Files.Get "files/certs/filebeat.pem" | b64enc | indent 4 }}
+  node-key.pem: |-
+{{ .Files.Get "files/certs/node-key.pem" | b64enc | indent 4 }}
+  node.pem: |-
+{{ .Files.Get "files/certs/node.pem" | b64enc | indent 4 }}
+  root-ca.pem: |-
+{{ .Files.Get "files/certs/root-ca.pem" | b64enc | indent 4 }}
+type: Opaque

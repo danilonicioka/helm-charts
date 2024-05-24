@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ include "wazuh.fullname" . }}-indexer-cred
+  labels:
+  {{- include "wazuh.labels" . | nindent 4 }}
+data:
+  password: {{ .Values.cred.indexer.password | b64enc }}
+  username: {{ .Values.cred.indexer.username | b64enc }}

@@ -1,0 +1,150 @@
+kubernetesClusterDomain: cluster.local
+
+# Credenciais
+cred:
+  api:
+    password: 123
+    username: wazuh-wui
+  authd:
+    password: password
+  cluster:
+    key: 123
+  dashboard:
+    password: 123
+    username: kibanaserver
+  indexer:
+    password: 123
+    username: admin
+
+# Svc for cluster (master + worker)
+cluster:
+  ports:
+  - name: cluster
+    port: 1516
+    targetPort: 1516
+  type: ClusterIP
+
+# Dashboard configs
+dashboard:
+  ports:
+  - name: dashboard
+    nodePort: 30000
+    port: 443
+    targetPort: 5601
+  replicas: 1
+  type: NodePort
+  wazuhDashboard:
+    env:
+      indexerUrl: https://wazuh-indexer-0.wazuh-indexer:9200
+      serverSslCertificate: /usr/share/wazuh-dashboard/certs/cert.pem
+      serverSslEnabled: "true"
+      serverSslKey: /usr/share/wazuh-dashboard/certs/key.pem
+      wazuhApiUrl: https://wazuh-manager-master-0.wazuh-cluster
+    image:
+      repository: wazuh/wazuh-dashboard
+      tag: 4.4.1
+
+# Indexer configs
+indexer:
+  ports:
+  - name: indexer-rest
+    port: 9200
+    targetPort: 9200
+  - name: indexer-nodes
+    port: 9300
+    targetPort: 9300
+  replicas: 1
+  type: ClusterIP
+  volumeClaims:
+    wazuhIndexer:
+      requests:
+        storage: 10Gi
+  wazuhIndexer:
+    containerSecurityContext:
+      capabilities:
+        add:
+        - SYS_CHROOT
+    env:
+      clusterName: wazuh
+      disableInstallDemoConfig: true
+      discoveryService: wazuh-indexer
+      networkHost: 0.0.0.0
+      opensearchJavaOpts: -Xms1g -Xmx1g -Dlog4j2.formatMsgNoLookups=true
+    image:
+      repository: wazuh/wazuh-indexer
+      tag: 4.4.1
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+
+# Master configs
+managerMaster:
+  replicas: 1
+  volumeClaims:
+    wazuhManagerMaster:
+      requests:
+        storage: 10Gi
+  wazuhManager:
+    containerSecurityContext:
+      capabilities:
+        add:
+        - SYS_CHROOT
+    env:
+      filebeatSslVerificationMode: full
+      indexerUrl: https://wazuh-indexer-0.wazuh-indexer:9200
+      sslCertificate: /etc/ssl/filebeat.pem
+      sslCertificateAuthorities: /etc/ssl/root-ca.pem
+      sslKey: /etc/ssl/filebeat.key
+    image:
+      repository: wazuh/wazuh-manager
+      tag: 4.4.1
+
+# Svc for manager
+wazuh:
+  ports:
+  - name: registration
+    nodePort: 30002
+    port: 1515
+    targetPort: 1515
+  - name: api
+    nodePort: 30003
+    port: 55000
+    targetPort: 55000
+  type: NodePort
+
+# Worker configs
+managerWorker:
+  replicas: 1
+  volumeClaims:
+    wazuhManagerWorker:
+      requests:
+        storage: 10Gi
+  wazuhManager:
+    containerSecurityContext:
+      capabilities:
+        add:
+        - SYS_CHROOT
+    env:
+      filebeatSslVerificationMode: full
+      indexerUrl: https://wazuh-indexer-0.wazuh-indexer:9200
+      sslCertificate: /etc/ssl/filebeat.pem
+      sslCertificateAuthorities: /etc/ssl/root-ca.pem
+      sslKey: /etc/ssl/filebeat.key
+    image:
+      repository: wazuh/wazuh-manager
+      tag: 4.4.1
+
+# Svc for worker
+workers:
+  ports:
+  - name: agents-events
+    nodePort: 30001
+    port: 1514
+    targetPort: 1514
+  type: NodePort
+
+# Persistence
+persistence:
+  enabled: true
+  storageClassName: ""

@@ -1,0 +1,419 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "wazuh.fullname" . }}-indexer
+  labels:
+  {{- include "wazuh.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.indexer.replicas }}
+  selector:
+    matchLabels:
+      app: wazuh-indexer
+  serviceName: {{ include "wazuh.fullname" . }}-indexer
+  template:
+    metadata:
+      labels:
+        app: wazuh-indexer
+      name: wazuh-indexer
+    spec:
+      containers:
+      - env:
+        - name: OPENSEARCH_JAVA_OPTS
+          value: {{ quote .Values.indexer.wazuhIndexer.env.opensearchJavaOpts }}
+        - name: CLUSTER_NAME
+          value: {{ quote .Values.indexer.wazuhIndexer.env.clusterName }}
+        - name: NETWORK_HOST
+          value: {{ quote .Values.indexer.wazuhIndexer.env.networkHost }}
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: DISCOVERY_SERVICE
+          value: {{ quote .Values.indexer.wazuhIndexer.env.discoveryService }}
+        - name: KUBERNETES_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: DISABLE_INSTALL_DEMO_CONFIG
+          value: {{ quote .Values.indexer.wazuhIndexer.env.disableInstallDemoConfig
+            }}
+        - name: KUBERNETES_CLUSTER_DOMAIN
+          value: {{ quote .Values.kubernetesClusterDomain }}
+        image: "{{ .Values.indexer.wazuhIndexer.image.repository }}:{{ .Values.indexer.wazuhIndexer.image.tag | default .Chart.AppVersion }}"
+        name: wazuh-indexer
+        ports:
+        - containerPort: 9200
+          name: indexer-rest
+        - containerPort: 9300
+          name: indexer-nodes
+        resources: {{- toYaml .Values.indexer.wazuhIndexer.resources | nindent 10 }}
+        securityContext: {{- toYaml .Values.indexer.wazuhIndexer.containerSecurityContext
+          | nindent 10 }}
+        volumeMounts:
+        - mountPath: /var/lib/wazuh-indexer
+          name: wazuh-indexer
+        - mountPath: /usr/share/wazuh-indexer/certs/node-key.pem
+          name: indexer-certs
+          readOnly: true
+          subPath: node-key.pem
+        - mountPath: /usr/share/wazuh-indexer/certs/node.pem
+          name: indexer-certs
+          readOnly: true
+          subPath: node.pem
+        - mountPath: /usr/share/wazuh-indexer/certs/root-ca.pem
+          name: indexer-certs
+          readOnly: true
+          subPath: root-ca.pem
+        - mountPath: /usr/share/wazuh-indexer/certs/admin.pem
+          name: indexer-certs
+          readOnly: true
+          subPath: admin.pem
+        - mountPath: /usr/share/wazuh-indexer/certs/admin-key.pem
+          name: indexer-certs
+          readOnly: true
+          subPath: admin-key.pem
+        - mountPath: /usr/share/wazuh-indexer/opensearch.yml
+          name: indexer-conf
+          readOnly: true
+          subPath: opensearch.yml
+        - mountPath: /usr/share/wazuh-indexer/opensearch-security/internal_users.yml
+          name: indexer-conf
+          readOnly: true
+          subPath: internal_users.yml
+      initContainers:
+      - command:
+        - sh
+        - -c
+        - chown -R 1000:1000 /var/lib/wazuh-indexer
+        image: busybox
+        name: volume-mount-hack
+        resources:
+          limits:
+            cpu: 100m
+            memory: 256Mi
+          requests:
+            cpu: 50m
+            memory: 128Mi
+        volumeMounts:
+        - mountPath: /var/lib/wazuh-indexer
+          name: wazuh-indexer
+      - command:
+        - sysctl
+        - -w
+        - vm.max_map_count=262144
+        image: busybox
+        name: increase-the-vm-max-map-count
+        resources: {}
+        securityContext:
+          privileged: true
+      volumes:
+      - name: indexer-certs
+        secret:
+          secretName: {{ include "wazuh.fullname" . }}-indexer-certs
+      - configMap:
+          name: {{ include "wazuh.fullname" . }}-indexer-conf
+        name: indexer-conf
+  updateStrategy: {}
+  volumeClaimTemplates:
+  - metadata:
+      creationTimestamp: null
+      name: wazuh-indexer
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources: {{ .Values.indexer.volumeClaims.wazuhIndexer | toYaml | nindent 8
+        }}
+      storageClassName: {{ .Values.persistence.storageClassName }}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "wazuh.fullname" . }}-manager-master
+  labels:
+  {{- include "wazuh.labels" . | nindent 4 }}
+spec:
+  podManagementPolicy: Parallel
+  replicas: {{ .Values.managerMaster.replicas }}
+  selector:
+    matchLabels:
+      app: wazuh-manager
+      node-type: master
+  serviceName: {{ include "wazuh.fullname" . }}-cluster
+  template:
+    metadata:
+      labels:
+        app: wazuh-manager
+        node-type: master
+      name: wazuh-manager-master
+    spec:
+      containers:
+      - env:
+        - name: INDEXER_URL
+          value: {{ quote .Values.managerMaster.wazuhManager.env.indexerUrl }}
+        - name: INDEXER_USERNAME
+          valueFrom:
+            secretKeyRef:
+              key: username
+              name: {{ include "wazuh.fullname" . }}-indexer-cred
+        - name: INDEXER_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: {{ include "wazuh.fullname" . }}-indexer-cred
+        - name: FILEBEAT_SSL_VERIFICATION_MODE
+          value: {{ quote .Values.managerMaster.wazuhManager.env.filebeatSslVerificationMode
+            }}
+        - name: SSL_CERTIFICATE_AUTHORITIES
+          value: {{ quote .Values.managerMaster.wazuhManager.env.sslCertificateAuthorities
+            }}
+        - name: SSL_CERTIFICATE
+          value: {{ quote .Values.managerMaster.wazuhManager.env.sslCertificate }}
+        - name: SSL_KEY
+          value: {{ quote .Values.managerMaster.wazuhManager.env.sslKey }}
+        - name: API_USERNAME
+          valueFrom:
+            secretKeyRef:
+              key: username
+              name: {{ include "wazuh.fullname" . }}-api-cred
+        - name: API_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: {{ include "wazuh.fullname" . }}-api-cred
+        - name: WAZUH_CLUSTER_KEY
+          valueFrom:
+            secretKeyRef:
+              key: key
+              name: {{ include "wazuh.fullname" . }}-cluster-key
+        - name: KUBERNETES_CLUSTER_DOMAIN
+          value: {{ quote .Values.kubernetesClusterDomain }}
+        image: "{{ .Values.managerMaster.wazuhManager.image.repository }}:{{ .Values.managerMaster.wazuhManager.image.tag | default .Chart.AppVersion }}"
+        name: wazuh-manager
+        ports:
+        - containerPort: 1515
+          name: registration
+        - containerPort: 1516
+          name: cluster
+        - containerPort: 55000
+          name: api
+        resources: {{- toYaml .Values.managerMaster.wazuhManager.resources | nindent
+          10 }}
+        securityContext: {{- toYaml .Values.managerMaster.wazuhManager.containerSecurityContext
+          | nindent 10 }}
+        volumeMounts:
+        - mountPath: /wazuh-config-mount/etc/ossec.conf
+          name: config
+          readOnly: true
+          subPath: master.conf
+        - mountPath: /etc/ssl/root-ca.pem
+          name: filebeat-certs
+          readOnly: true
+          subPath: root-ca.pem
+        - mountPath: /etc/ssl/filebeat.pem
+          name: filebeat-certs
+          readOnly: true
+          subPath: filebeat.pem
+        - mountPath: /etc/ssl/filebeat.key
+          name: filebeat-certs
+          readOnly: true
+          subPath: filebeat-key.pem
+        - mountPath: /wazuh-config-mount/etc/authd.pass
+          name: wazuh-authd-pass
+          readOnly: true
+          subPath: authd.pass
+        - mountPath: /var/ossec/api/configuration
+          name: wazuh-manager-master
+          subPath: wazuh/var/ossec/api/configuration
+        - mountPath: /var/ossec/etc
+          name: wazuh-manager-master
+          subPath: wazuh/var/ossec/etc
+        - mountPath: /var/ossec/logs
+          name: wazuh-manager-master
+          subPath: wazuh/var/ossec/logs
+        - mountPath: /var/ossec/queue
+          name: wazuh-manager-master
+          subPath: wazuh/var/ossec/queue
+        - mountPath: /var/ossec/var/multigroups
+          name: wazuh-manager-master
+          subPath: wazuh/var/ossec/var/multigroups
+        - mountPath: /var/ossec/integrations
+          name: wazuh-manager-master
+          subPath: wazuh/var/ossec/integrations
+        - mountPath: /var/ossec/active-response/bin
+          name: wazuh-manager-master
+          subPath: wazuh/var/ossec/active-response/bin
+        - mountPath: /var/ossec/agentless
+          name: wazuh-manager-master
+          subPath: wazuh/var/ossec/agentless
+        - mountPath: /var/ossec/wodles
+          name: wazuh-manager-master
+          subPath: wazuh/var/ossec/wodles
+        - mountPath: /etc/filebeat
+          name: wazuh-manager-master
+          subPath: filebeat/etc/filebeat
+        - mountPath: /var/lib/filebeat
+          name: wazuh-manager-master
+          subPath: filebeat/var/lib/filebeat
+      securityContext:
+        fsGroup: 101
+      volumes:
+      - configMap:
+          name: {{ include "wazuh.fullname" . }}-conf
+        name: config
+      - name: filebeat-certs
+        secret:
+          secretName: {{ include "wazuh.fullname" . }}-indexer-certs
+      - name: wazuh-authd-pass
+        secret:
+          secretName: {{ include "wazuh.fullname" . }}-authd-pass
+  updateStrategy: {}
+  volumeClaimTemplates:
+  - metadata:
+      creationTimestamp: null
+      name: wazuh-manager-master
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources: {{ .Values.managerMaster.volumeClaims.wazuhManagerMaster | toYaml
+        | nindent 8 }}
+      storageClassName: {{ .Values.persistence.storageClassName }}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "wazuh.fullname" . }}-manager-worker
+  labels:
+  {{- include "wazuh.labels" . | nindent 4 }}
+spec:
+  podManagementPolicy: Parallel
+  replicas: {{ .Values.managerWorker.replicas }}
+  selector:
+    matchLabels:
+      app: wazuh-manager
+      node-type: worker
+  serviceName: {{ include "wazuh.fullname" . }}-cluster
+  template:
+    metadata:
+      labels:
+        app: wazuh-manager
+        node-type: worker
+      name: wazuh-manager-worker
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              topologyKey: kubernetes.io/hostname
+            weight: 100
+      containers:
+      - env:
+        - name: INDEXER_URL
+          value: {{ quote .Values.managerWorker.wazuhManager.env.indexerUrl }}
+        - name: INDEXER_USERNAME
+          valueFrom:
+            secretKeyRef:
+              key: username
+              name: {{ include "wazuh.fullname" . }}-indexer-cred
+        - name: INDEXER_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: {{ include "wazuh.fullname" . }}-indexer-cred
+        - name: FILEBEAT_SSL_VERIFICATION_MODE
+          value: {{ quote .Values.managerWorker.wazuhManager.env.filebeatSslVerificationMode
+            }}
+        - name: SSL_CERTIFICATE_AUTHORITIES
+          value: {{ quote .Values.managerWorker.wazuhManager.env.sslCertificateAuthorities
+            }}
+        - name: SSL_CERTIFICATE
+          value: {{ quote .Values.managerWorker.wazuhManager.env.sslCertificate }}
+        - name: SSL_KEY
+          value: {{ quote .Values.managerWorker.wazuhManager.env.sslKey }}
+        - name: WAZUH_CLUSTER_KEY
+          valueFrom:
+            secretKeyRef:
+              key: key
+              name: {{ include "wazuh.fullname" . }}-cluster-key
+        - name: KUBERNETES_CLUSTER_DOMAIN
+          value: {{ quote .Values.kubernetesClusterDomain }}
+        image: "{{ .Values.managerWorker.wazuhManager.image.repository }}:{{ .Values.managerWorker.wazuhManager.image.tag | default .Chart.AppVersion }}"
+        name: wazuh-manager
+        ports:
+        - containerPort: 1514
+          name: agents-events
+        - containerPort: 1516
+          name: cluster
+        resources: {{- toYaml .Values.managerWorker.wazuhManager.resources | nindent
+          10 }}
+        securityContext: {{- toYaml .Values.managerWorker.wazuhManager.containerSecurityContext
+          | nindent 10 }}
+        volumeMounts:
+        - mountPath: /wazuh-config-mount/etc/ossec.conf
+          name: config
+          readOnly: true
+          subPath: worker.conf
+        - mountPath: /etc/ssl/root-ca.pem
+          name: filebeat-certs
+          readOnly: true
+          subPath: root-ca.pem
+        - mountPath: /etc/ssl/filebeat.pem
+          name: filebeat-certs
+          readOnly: true
+          subPath: filebeat.pem
+        - mountPath: /etc/ssl/filebeat.key
+          name: filebeat-certs
+          readOnly: true
+          subPath: filebeat-key.pem
+        - mountPath: /var/ossec/api/configuration
+          name: wazuh-manager-worker
+          subPath: wazuh/var/ossec/api/configuration
+        - mountPath: /var/ossec/etc
+          name: wazuh-manager-worker
+          subPath: wazuh/var/ossec/etc
+        - mountPath: /var/ossec/logs
+          name: wazuh-manager-worker
+          subPath: wazuh/var/ossec/logs
+        - mountPath: /var/ossec/queue
+          name: wazuh-manager-worker
+          subPath: wazuh/var/ossec/queue
+        - mountPath: /var/ossec/var/multigroups
+          name: wazuh-manager-worker
+          subPath: wazuh/var/ossec/var/multigroups
+        - mountPath: /var/ossec/integrations
+          name: wazuh-manager-worker
+          subPath: wazuh/var/ossec/integrations
+        - mountPath: /var/ossec/active-response/bin
+          name: wazuh-manager-worker
+          subPath: wazuh/var/ossec/active-response/bin
+        - mountPath: /var/ossec/agentless
+          name: wazuh-manager-worker
+          subPath: wazuh/var/ossec/agentless
+        - mountPath: /var/ossec/wodles
+          name: wazuh-manager-worker
+          subPath: wazuh/var/ossec/wodles
+        - mountPath: /etc/filebeat
+          name: wazuh-manager-worker
+          subPath: filebeat/etc/filebeat
+        - mountPath: /var/lib/filebeat
+          name: wazuh-manager-worker
+          subPath: filebeat/var/lib/filebeat
+      securityContext:
+        fsGroup: 101
+      volumes:
+      - configMap:
+          name: {{ include "wazuh.fullname" . }}-conf
+        name: config
+      - name: filebeat-certs
+        secret:
+          secretName: {{ include "wazuh.fullname" . }}-indexer-certs
+  updateStrategy: {}
+  volumeClaimTemplates:
+  - metadata:
+      creationTimestamp: null
+      name: wazuh-manager-worker
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources: {{ .Values.managerWorker.volumeClaims.wazuhManagerWorker | toYaml
+        | nindent 8 }}
+      storageClassName: {{ .Values.persistence.storageClassName }}

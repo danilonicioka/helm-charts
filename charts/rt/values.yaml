@@ -1,0 +1,138 @@
+# Default values for openldap.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+strategy:
+  type: Recreate
+
+image:
+  repository: firefart/requesttracker
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "5.0.4"
+
+imagePullSecrets: []
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# create some initial user data
+initialData: []
+# - |
+#   dn: cn=Barbara Jensen,dc=example,dc=com
+#   objectClass: person
+#   cn: Barbara Jensen
+#   cn: Babs Jensen
+#   sn: Jensen
+#   title: the world's most famous mythical manager
+#   mail: bjensen@example.com
+#   uid: bjensen
+
+logLevel: debug
+
+persistence:
+  enabled: true
+  storage: 500Mi
+  storageClass: ""
+  existingClaim: ""
+
+service:
+  rtPort: 9000
+  type: ClusterIP
+
+ingress:
+  enabled: true
+  name: rt
+  className: nginx
+  #host: rt-teste.com
+  host: rt.csic.ufpa.br
+  path: /
+  pathType: Prefix
+  serviceName: rt-nginx
+  servicePort: 80
+  tls:
+    enabled: true
+    secretName: tls-rt-ingress
+    clusterissuer: selfsigned-cluster-issuer
+
+scripts:
+  init:
+    perl /opt/rt5/sbin/rt-setup-database --action init --dba-password=g3ntl3m@n.p@ss
+  drop:
+    perl /opt/rt5/sbin/rt-setup-database --action drop --dba-password=g3ntl3m@n.p@ss
+  create:
+    perl /opt/rt5/sbin/rt-setup-database --action create --dba-password=g3ntl3m@n.p@ss
+  clone:
+    perl /opt/rt5/sbin/rt-setup-database --action create,schema,acl --dba-password=g3ntl3m@n.p@ss
+  import:
+    perl /opt/rt5/sbin/rt-importer /root/data
+  ldap:
+    rt-ldapimport --import --verbose 
+
+postgresql:
+  persistence:
+    enabled: true
+    mountPath: /var/lib/postgresql/data
+    subPath: data
+    accessModes:  [ReadWriteOnce]
+    ## Storage Capacity for persistent volume
+    storage: 10Gi
+    existingClaim: ""
+    storageClass: ""
+  postgresql:
+    username: rtuser
+    password: g3ntl3m@n.p@ss
+    port: 5432
+  scripts:
+    dump:
+      psql -U rtuser rt < /root/rt-dump.sql
+
+cron:
+  persistence:
+    enabled: true
+    data:
+      storage: 100Mi
+      existingClaim: ""
+      storageClass: ""
+    shredder:
+      storage: 100Mi
+      existingClaim: ""
+      storageClass: ""
+
+nginx:
+  service:
+    type: ClusterIP
+    nginxPort: 80
+    ssl:
+      enabled: false
+      sslRtPort: 443

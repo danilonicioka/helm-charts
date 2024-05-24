@@ -1,0 +1,117 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name:  {{ template "ocs.fullname" . }}-ocs
+  labels:
+    app: {{ template "ocs.name" . }}
+    chart: {{ template "ocs.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+{{- if .Values.extraLabels }}
+{{ toYaml .Values.extraLabels | indent 4 }}
+{{- end }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+{{- if .Values.strategy }}
+  strategy:
+{{ toYaml .Values.strategy | indent 4 }}
+{{- end }}
+  selector:
+    matchLabels:
+      app: {{ template "ocs.name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+{{- if .Values.podAnnotations}}
+{{ toYaml .Values.podAnnotations | indent 8}}
+{{- end }}
+      labels:
+        app: {{ template "ocs.name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}/{{ .Values.image.version }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: ocs
+              containerPort: {{ .Values.service.ocsPort }}
+            - name: ssl-ocs
+              containerPort: {{ .Values.service.sslOcsPort }}
+          envFrom:
+            - configMapRef:
+                name: {{ template "ocs.fullname" . }}-env
+            - secretRef:
+                name: {{ template "ocs.secretName" . }}
+          volumeMounts:
+          - name: perlcomdata
+            mountPath: /etc/ocsinventory-server
+          - name: ocsreportsdata
+            mountPath: /usr/share/ocsinventory-reports/ocsreports
+          - name: varlibdata
+            mountPath: /var/lib/ocsinventory-reports
+          - name: httpdconfdata
+            mountPath: /etc/httpd/conf.d
+          livenessProbe:
+            tcpSocket:
+              port: ocs
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            failureThreshold: 10
+          readinessProbe:
+            tcpSocket:
+              port: ocs
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            failureThreshold: 10
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- if .Values.affinity }}
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: {{ .Values.affinity.key }}
+                operator: In
+                values:
+                - {{ .Values.affinity.values }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+      restartPolicy: Always
+      volumes:
+        - name: perlcomdata
+        {{- if .Values.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.existingClaim | default "ocs-perlcomdata" }}
+        {{- else }}
+          emptyDir: {}
+        {{- end }}
+        - name: ocsreportsdata
+        {{- if .Values.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.existingClaim | default "ocs-ocsreportsdata" }}
+        {{- else }}
+          emptyDir: {}
+        {{- end}}
+        - name: varlibdata
+        {{- if .Values.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.existingClaim | default "ocs-varlibdata" }}
+        {{- else }}
+          emptyDir: {}
+        {{- end }}
+        - name: httpdconfdata
+        {{- if .Values.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.existingClaim | default "ocs-httpdconfdata" }}
+        {{- else }}
+          emptyDir: {}
+        {{- end -}}

@@ -1,0 +1,17 @@
+# A ConfigMap spec for ocs that maps the env variables to the pod
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "ocs.fullname" . }}-env
+  labels:
+    app: {{ template "ocs.name" . }}
+    chart: {{ template "ocs.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+{{- if .Values.extraLabels }}
+{{ toYaml .Values.extraLabels | indent 4 }}
+{{- end }}
+data:
+{{ toYaml .Values.env | indent 2 }}
+...

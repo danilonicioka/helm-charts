@@ -1,0 +1,583 @@
+<head>
+<style>    
+    #relatorio{
+	    font-size: 1em;
+    }
+    
+    #relatorio table{
+	    font-size: 1em;
+    }
+    
+    
+    #relatorio td{
+	    font-size: 1em;
+    }
+    
+    #relatorio thead td{
+	    font-size: 1em;
+	    background: white;
+    }
+    
+    
+    #relatorio-container {
+	    width: 640px;
+	    margin: 0 auto;
+	    text-align: left;
+    }
+    
+    #relatorio-paisagem-container {
+	    width: 900px;
+	    margin: 0 auto;
+	    text-align: left;
+    }
+    
+    #relatorio-cabecalho{
+	    border: 1px solid #6A6A6A;
+	    padding: 6px;
+	    background-color: #FFFFFF;
+	    min-height: 55px;
+	    _height: 55px;
+    }
+    
+    #relatorio-cabecalho #ufrn{
+	    float: left;
+	    width: 22%;
+	    text-align: center;
+    }
+    
+    #relatorio-cabecalho #sinfo{
+	    float: right;
+	    width: 14%;
+	    padding-left: 20px;
+    }
+    
+    
+    #relatorio-cabecalho #texto{
+	    margin: 0 100px;
+	    font-size: 1.0em;
+	    font-variant: small-caps;
+	    text-align: center;
+	    font-weight: bold;
+    }
+    
+    #relatorio-cabecalho #texto .dataAtual{
+	    font-weight: normal;
+	    text-align: left;
+    }
+    
+    #relatorio-rodape {
+	    background: #FFFFFF;
+	    border: 1px;
+	    border-style: solid;
+    }
+    
+    #relatorio-rodape p{
+	    clear: both;
+	    color: #000000;
+	    padding: 2px;
+	    text-align: center;
+	    border: 0;
+    }
+    #relatorio-rodape table tr td{
+	    font-size: 0.65em;
+    }
+    
+    #relatorio h2{
+	    background: #FFFFFF;
+	    /*border-bottom:1px solid #000000;*/
+	    border-bottom:0px;
+	    color:#000000;
+	    text-align: center;
+    }
+    #relatorio h2.title {
+	    margin: 0;
+	    padding: 3px;
+	    color: black;
+	    border: 0;
+    }
+    
+    #relatorio #parametrosRelatorio{
+	    border-bottom:1px solid #000000;
+	    width: 100%;
+    }
+    
+    #relatorio #parametrosRelatorio th{
+	    color: #000000;
+	    font-weight: bold;
+	    text-align: left;
+    }
+    
+    #relatorio #parametrosRelatorio td{
+	    color: #000000;
+	    text-align: left;
+    }
+    
+    #relatorio .linhaPar {
+	    background-color: #FFFFFF;
+    }
+    
+    #relatorio .linhaPar tr td, .linhaImpar tr td{
+	    text-align: left;
+    }
+    
+    #relatorio .linhaImpar {
+	    background-color: #FFFFFF;
+    }
+    
+    caption.documento {
+	    font-family: Verdana;
+	    font-style: normal;
+	    font-weight: bold;
+	    font-size: 10pt;
+	    background-color: #DEDFE3;
+	    border-bottom-width:1;
+	    border-color:black;
+	    border-bottom-style:solid;
+    }
+    
+    .linhaAbaixo {
+	    border-bottom-width:1;
+	    border-color:black;
+	    border-bottom-style:solid;
+    }
+    
+    .linhaAcima {
+	    border-top-width:1;
+	    border-color:black;
+	    border-top-style:solid;
+    }
+    
+    .linhaAcimaEsq {
+	    border-top-width:1;
+	    border-color:black;
+	    border-top-style:solid;
+	    border-left-width:1;
+	    border-left-style:solid;
+    }
+    
+    .linhaAcimaDir {
+	    border-color:black;
+	    border-top-width:1;
+	    border-top-style:solid;
+	    border-right-width:1;
+	    border-right-style:solid;
+    }
+    .linhaAcimaEsqDir {
+	    border-color:black;
+	    border-top-width:1;
+	    border-top-style:solid;
+	    border-left-width:1;
+	    border-left-style:solid;
+	    border-right-width:1;
+	    border-right-style:solid;
+    }
+    .bordaTD {
+	    border-color:black;
+	    border-top-width:1;
+	    border-top-style:solid;
+	    border-left-width:1;
+	    border-left-style:solid;
+	    border-right-width:1;
+	    border-right-style:solid;
+	    border-bottom-width:1;
+	    border-bottom-style:solid;
+    
+    }
+    
+    
+    .linhaEsq {
+	    border-left-width:1;
+	    border-color:black;
+	    border-left-style:solid;
+    }
+    .linhaDir {
+	    border-color:black;
+	    border-right-width:1;
+	    border-right-style:solid;
+    }
+    
+    .tituloRelatorio {
+	    border-bottom: 1px silver solid;
+	    border-bottom-color: gray;
+	    font-size: 8pt;
+    }
+    
+    .tituloRelatorio td{
+	    font-size: 1em;
+    }
+    
+    .infoRelatorio {
+	    border-top: 1px silver solid;
+	    border-bottom: 1px silver solid;
+    }
+    
+    .infoRelatorio td, .infoRelatorio th{
+	    font-size: 1em;;
+    
+    }
+    
+    .infoRelatorio tbody td, .infoRelatorio thead th{
+	    text-align: left;
+    }
+    
+    
+    table.tabelaRelatorio{
+	    border-top:2px black solid;
+	    border-bottom:1px black solid;
+	    padding: 3px;
+    }
+    
+    table.subTabelaRelatorio{
+	    border-bottom:1px black solid;
+	    padding: 3px;
+    }
+    
+    table.tabelaRelatorioBorda {
+	    border-top:2px black solid;
+	    padding: 3px;
+    }
+    
+    table.tabelaRelatorio caption, table.tabelaRelatorioBorda caption, h3.tituloTabelaRelatorio{
+	    font-size: 1.1em;
+	    font-weight: bold;
+	    border-top:2px black solid;
+	    font-variant:  small-caps;
+	    text-align: center;
+    }
+    table.subTabelaRelatorio caption, h3.tituloSubTabelaRelatorio{
+	    font-size: 1.1em;
+	    font-weight: bold;
+	    border-bottom:1px black solid;
+	    font-variant:  small-caps;
+    }
+    
+    table.tabelaRelatorio tfoot, table.tabelaRelatorioBorda tfoot{
+	    font-weight: bold;
+    }
+    
+    table.tabelaRelatorioBorda tfoot td{
+	    border:1px silver solid;
+    }
+    
+    
+    table.tabelaRelatorio thead td, table.tabelaRelatorio thead th{
+	    font-weight: bold;
+	    padding: 2px;
+	    text-align: left;
+    }
+    
+    
+    
+    table.tabelaRelatorio tbody tr.destaque, table.tabelaRelatorioBorda tbody tr.destaque{
+	    font-weight: bold;
+	    background: #DDD;
+	    border-top: 1px solid #CCC;
+	    font-variant: small-caps;
+	    font-size: 1em;
+    }
+    
+    table.tabelaRelatorioBorda thead td, table.tabelaRelatorioBorda thead th{
+	    border:1px black solid;
+	    font-weight: bold;
+	    padding: 2px;
+	    text-align: left;
+    }
+    
+    table.tabelaRelatorioBorda tbody td, table.tabelaRelatorioBorda tbody th{
+	    border:1px silver solid;
+	    padding: 2px;
+    }
+    
+    table.tabelaRelatorio tbody td{
+	    padding: 2px;
+	    text-align: left;
+    }
+    
+    table.tabelaRelatorio tbody th, table.tabelaRelatorioBorda tbody th{
+	    font-weight: bold;
+	    text-align: left;
+    }
+    
+    
+    .colunaDireitaRelatorio {
+	    border-right:1px silver solid;
+    }
+    
+    .colunaEsqDirRelatorio {
+	    border-right:1px silver solid;
+	    border-left:1px silver solid;
+    }
+    
+    .bordaDireitaRelatorio {
+	    border-right:1px silver solid;
+	    border-top:1px silver solid;
+	    border-bottom:1px silver solid;
+    }
+    
+    .bordaEsqDirRelatorio {
+	    border-right:1px silver solid;
+	    border-top:1px silver solid;
+	    border-left:1px silver solid;
+	    border-bottom:1px silver solid;
+    }
+    
+    .bordaDireitaBottonRelatorio {
+	    border-right:1px silver solid;
+	    border-bottom:1px silver solid;
+    }
+    
+    .bordaBottonRelatorio {
+	    border-bottom:1px silver solid;
+    }
+    
+    .linhaPontilhadaAbaixo {
+	    border-bottom:1px silver dashed;
+    }
+    
+    .linhaAcimaRelatorio {
+	    border-top:1px silver solid;
+    }
+    
+    .bordaEsqDirBottonRelatorio {
+	    border-right:1px silver solid;
+	    border-left:1px silver solid;
+	    border-bottom:1px silver solid;
+    }
+    
+    
+    caption.subRelatorio {
+	    font-weight: bold;
+	    font-variant: small-caps;
+	    border-top: 1px black solid;
+    }
+    
+    .rodapeRelatorio {
+	    border-top: 2px black solid;
+    }
+    
+    .fontePequena {
+	    font-size: 7pt;
+    }
+    
+    .texto {
+	    text-indent: 10px;
+	    text-align: justify;
+	    margin-top: 10px;
+	    margin-bottom: 10px;
+	    margin-left: 5%;
+	    margin-right: 5%;
+    }
+    
+    span.tooltip {
+	    color: #000000;
+	    font-weight: bold;
+	    cursor: help;
+    }
+    
+    tr.linhaParRelatorio {
+	    background-color: #F7F4F4;
+    }
+    
+    .rightAlign {
+	    text-align: right;
+    }
+    
+    .centerAlign {
+	    text-align: center;
+    }
+    
+    .ext_cabecalho {
+	    background-color: #EDF1F8;
+	    font-style: italic;
+	    text-align: center;
+	    font-weight: bold;
+    }
+    
+    .ext_menu {
+	    background-color: #EDF1F8;
+	    font-style: italic;
+	    text-align: center;
+    }
+    
+    .newtitle {
+		    border-top: 2px solid #C4D2EB;
+		    border-bottom: 2px solid #C4D2EB;
+		    margin: 0;
+		    padding: 3px;
+		    margin-bottom: 5px;
+		    background: #FBFBFB;
+		    text-align: center;
+    }
+    
+    li.validado {
+	    list-style-image: url(/sigaa/img/prodocente/validacao/validado.gif)
+    }
+    
+    li.invalidado {
+	    list-style-image: url(/sigaa/img/prodocente/validacao/invalidado.gif)
+    }
+    
+    li.pendente {
+	    list-style-image: url(/sigaa/img/prodocente/validacao/pendente.gif)
+    }
+    
+    
+    
+    .abrir{
+	    background: no-repeat;
+	    background-image: url(/shared/img/geral/seta_baixo.gif);
+	    background-position: 0px -2px;
+	    border: 0;
+	    padding: 0;
+	    margin: 0;
+    }
+    .fechar{
+	    background: no-repeat;
+	    background-image: url(/shared/img/geral/seta_cima.gif);
+	    background-position: 0px -2px;
+	    padding: 0;
+	    margin: 0;
+    }
+    
+    .textcomplete {
+	    background-color: #FFFF00;
+    }
+    html.background, body.background {
+	    background: url(../img/bg_pagina_1024.jpg) repeat-y center;
+    }
+    
+    body {
+	    margin: 0;
+	    font-size: 70%;
+	    font-family: Verdana, sans-serif;
+	    /*background: #E6E8EC;*/
+	    text-decoration: none;
+	    text-align: center;
+    }
+    
+    
+    h1,h2,h3,h4,h5,h6,form,p {
+	    margin: 0;
+	    padding: 0;
+    }
+    
+    h1 {font-size: 1.5em;}
+    h2, h2#title{
+	    font-size: 1.2em;
+	    color: #003395;
+	    font-variant: small-caps;
+	    margin: 0 0px 15px;
+	    /*margin: 0 5px 15px;*/
+	    border-bottom: 1px solid #C4D2EB;
+	    padding: 4px 0 2px 22px;
+	    letter-spacing: 0px;
+	    text-align: left;
+	    background: #EFF3FA;
+    }
+    
+    
+    h3 {font-size: 1.2em; }
+    h4 {font-size: 1.1em;}
+    h5 {font-size: 0.9em;}
+    h6 {font-size: 0.8em;}
+    
+    hr {
+	    color: #404E82;
+	    background-color: #404E82;
+	    height: 1px;
+	    border: 0;
+    }
+    
+    a:link {
+	    color: #003395;
+	    font-weight: bold;
+	    font-size: inherit;
+	    text-decoration: none;
+    }
+    
+    a:visited {
+	    color: #003390;
+	    text-decoration: none;
+	    font-weight: bold;
+    }
+    
+    a:active {
+	    color: #444444;
+	    text-decoration: none;
+	    font-weight: bold;
+    }
+    
+    a:hover {
+	    color: #333;
+	    font-weight: bold;
+	    text-decoration: none;
+    }
+    
+    label {cursor: pointer;}
+    
+    img {border: 0;}
+    
+    
+    table {
+	    border-collapse:collapse;
+    }
+    
+    table tbody tr th, table th {
+	    text-align: right;
+	    font-weight: normal;
+    }
+    
+    table thead, table tr.linhaCinza {
+	    background-color: #DEDFE3;
+	    font-weight: bold;
+    }
+    
+    table thead tr th {
+	    text-align: center;
+	    font-weight: bold;
+    }
+    
+    table thead th{
+	    font-weight: bold
+    }
+    
+    textarea {
+	    padding: 2px;
+    }
+    
+    select {
+	    text-align: justify;
+	    font-weight: normal;
+	    font-size: 0.8em;
+	    font-family: Verdana;
+    }
+    
+    input,textarea, select {
+	    font-family: Verdana, sans-serif;
+	    border: 1px solid #AAA;
+	    font-size: 1em;
+    }
+    
+    input[type="image"], input[type="checkbox"] , input[type="radio"]  {
+	    border: 0;
+    }
+    
+    input[type="submit"], input[type="button"] {
+	    margin: 0 2px;
+    }
+    
+    input[type="text"]:focus, input[type="password"]:focus, textarea:focus {
+	    border: 1px solid #D99C44;
+	    background-color: #FDFAF6;
+    }
+    
+    .required {
+	    background: url(../img/required.gif) no-repeat right; padding-right: 13px;
+    }
+	
+    .nota {
+	   border-right: 1px solid #888;
+	   border-bottom: 1px dashed #888;
+    }
+</style>
+</head>

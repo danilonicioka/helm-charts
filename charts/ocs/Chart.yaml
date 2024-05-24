@@ -1,0 +1,15 @@
+apiVersion: v2
+appVersion: "1.0"
+description: Helm chart of an improvement of notification mechanism already present in OCS Inventory NG.
+keywords:
+- ocs
+maintainers:
+- name: Danilo Nicioka
+  url: https://github.com/danilonicioka/
+name: ocs
+dependencies:
+  - name: mysql
+sources:
+- https://github.com/danilonicioka/helm_charts
+type: application
+version: "1.0"

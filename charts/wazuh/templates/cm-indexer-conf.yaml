@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "wazuh.fullname" . }}-indexer-conf
+  labels:
+  {{- include "wazuh.labels" . | nindent 4 }}
+data:
+{{ (.Files.Glob "files/conf/indexer/*").AsConfig | indent 2 }}

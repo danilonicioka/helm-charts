@@ -1,0 +1,7 @@
+components/database.ini
+CHANGELOG.md.old
+components/mail.ini
+components/*/node_modules
+components/*/package-lock.json
+components/*/.env
+

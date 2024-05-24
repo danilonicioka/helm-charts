@@ -1,0 +1,19 @@
+#
+# A ConfigMap spec for openldap that maps the initial data to the pod
+#
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "openldap.fullname" . }}-env
+  labels:
+    app: {{ template "openldap.name" . }}
+    chart: {{ template "openldap.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+{{- if .Values.extraLabels }}
+{{ toYaml .Values.extraLabels | indent 4 }}
+{{- end }}
+data:
+{{ toYaml .Values.env | indent 2 }}
+...

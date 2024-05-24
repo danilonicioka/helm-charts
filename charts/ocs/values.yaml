@@ -1,0 +1,136 @@
+# Default values for OCS inventory.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+namespace: ocs
+
+imagePullSecrets: []
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity:
+  key: kubernetes.io/hostname
+  values: node4
+
+initialData: []
+
+tls:
+  enabled: false
+
+logLevel: debug
+
+replicaCount: 1
+
+image:
+  registry: ucr.idc.ufpa.br
+  repository: ocs_inventory-ufpa
+  version: "2.8"
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "3.3"
+
+env:
+  OCS_DB_NAME: ocsweb
+  OCS_DB_SERVER: ocs-mysql
+  OCS_DB_USER: ocsuser
+  OCS_DB_PASS: "cs1c.p@ss"
+  OCS_SSL_ENABLED: "0"
+  TZ: America/Belem
+
+persistence:
+  enabled: true
+  storageClass: ""
+  perlcomdata: 
+    existingClaim: ""
+    storage: "200Mi"
+  ocsreportsdata: 
+    existingClaim: ""
+    storage: "200Mi"
+  varlibdata: 
+    existingClaim: ""
+    storage: "200Mi"
+  httpdconfdata: 
+    existingClaim: ""
+    storage: "200Mi"
+
+service:
+  type: ClusterIP
+  ocsPort: 80
+  sslOcsPort: 443
+
+serviceNodePort:
+  name: ocs-nodeport
+  type: NodePort
+  ports:
+    name: http
+    protocol: TCP
+    port: 80
+    targetPort: 80
+    nodePort: 30080
+  selector:
+    app: ocs
+
+ingress:
+  enabled: true
+  name: ocs
+  className: nginx
+  host: ocs.csic.ufpa.br
+  path: /
+  pathType: Prefix
+  serviceName: ocs
+  servicePort: 80
+  tls:
+    enabled: false
+    secretName: tls-ocs-ingress
+    clusterissuer: selfsigned-cluster-issuer
+
+
+# Credentials to pull image from registry
+imageCredentials:
+  enabled: true
+  registry: ucr.idc.ufpa.br
+  username: OCS_ACCESS_TOKEN
+  password: glpat-gnuz2-2xRjaT3X5tb3iX
+
+mysql:
+  env:
+    rootPass: "cs1c.r0ot.p@ss"
+    user: ocsuser
+    pass: "cs1c.p@ss"
+    db: ocsweb
+    timezone: America/Belem
+  persistence:
+    enabled: true
+    storageClass: ""
+    accessMode: ReadWriteOnce
+    existingClaim: ""
+    size: "5Gi"
+
+dockerConfig: ewoJImF1dGhzIjogewoJCSJ1Y3IuaWRjLnVmcGEuYnIiOiB7CgkJCSJhdXRoIjogIlpXeHBaVzVoYVM1emIyRnlaWE02Wld4cFpXNWhhVUJoZUdsdmN3PT0iCgkJfQoJfQp9

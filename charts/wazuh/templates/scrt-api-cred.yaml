@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ include "wazuh.fullname" . }}-api-cred
+  labels:
+  {{- include "wazuh.labels" . | nindent 4 }}
+data:
+  password: {{ required "api.password is required" .Values.cred.api.password |
+    b64enc}}
+  username: {{ required "api.username is required" .Values.cred.api.username |
+    b64enc }}

@@ -1,0 +1,30 @@
+---
+# This is the internal user database
+# The hash value is a bcrypt hash and can be generated with plugin/tools/hash.sh
+
+_meta:
+  type: "internalusers"
+  config_version: 2
+
+# Define your internal users here
+
+## Demo users
+
+admin:
+  hash: "$2y$12$jQ8ISni7FSoy19RvVLjidu/Zj/QrGBW4CN8Des8EHG85kh5qZlRoO"
+  reserved: true
+  backend_roles:
+  - "admin"
+  description: "Demo admin user"
+
+kibanaserver:
+  hash: "$2y$12$reSKcBSAm3iCkG4sXT4dY.MZ3G/3hOlUutk2lwOjLamjxSyGXfaoG"
+  reserved: true
+  description: "Demo kibanaserver user"
+
+## created
+
+readonly:
+  hash: "$2y$10$wHy2lkaKiPc9.T1GJ3ZpheSLZa4C2/Z8YdQ6.b1UkEYNBwsEdLRzW"
+  reserved: true
+  description: "readonly user"

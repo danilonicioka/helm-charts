@@ -1,0 +1,28 @@
+stages:
+    - build
+    - deploy
+
+build:
+  stage: build
+  when: manual
+  image:
+    name: gcr.io/kaniko-project/executor:v1.9.0-debug
+    entrypoint: [""]
+  variables:
+    CI_COMMIT_TAG: "3.3"
+  before_script:
+      - echo "{\"auths\":{\"${CI_REGISTRY}\":{\"auth\":\"$(printf "%s:%s" "${CI_REGISTRY_USER}" "${CI_REGISTRY_PASSWORD}" | base64 | tr -d '\n')\"}}}" > /kaniko/.docker/config.json
+  script:
+    - /kaniko/executor
+      --context "${CI_PROJECT_DIR}"
+      --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
+      --destination "${CI_REGISTRY_IMAGE}:$CI_COMMIT_TAG"
+
+deploy:
+    stage: deploy
+    when: manual
+    image:
+        name: dtzar/helm-kubectl:3.11.2
+        entrypoint: [""]
+    script:
+        - helm upgrade ocs . -i --create-namespace -n ocs

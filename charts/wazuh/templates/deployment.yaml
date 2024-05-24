@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "wazuh.fullname" . }}-dashboard
+  labels:
+  {{- include "wazuh.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.dashboard.replicas }}
+  selector:
+    matchLabels:
+      app: wazuh-dashboard
+    {{- include "wazuh.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: wazuh-dashboard
+      {{- include "wazuh.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - env:
+        - name: INDEXER_URL
+          value: {{ quote .Values.dashboard.wazuhDashboard.env.indexerUrl }}
+        - name: INDEXER_USERNAME
+          valueFrom:
+            secretKeyRef:
+              key: username
+              name: {{ include "wazuh.fullname" . }}-indexer-cred
+        - name: INDEXER_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: {{ include "wazuh.fullname" . }}-indexer-cred
+        - name: DASHBOARD_USERNAME
+          valueFrom:
+            secretKeyRef:
+              key: username
+              name: {{ include "wazuh.fullname" . }}-dashboard-cred
+        - name: DASHBOARD_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: {{ include "wazuh.fullname" . }}-dashboard-cred
+        - name: SERVER_SSL_ENABLED
+          value: {{ quote .Values.dashboard.wazuhDashboard.env.serverSslEnabled }}
+        - name: SERVER_SSL_CERTIFICATE
+          value: {{ quote .Values.dashboard.wazuhDashboard.env.serverSslCertificate }}
+        - name: SERVER_SSL_KEY
+          value: {{ quote .Values.dashboard.wazuhDashboard.env.serverSslKey }}
+        - name: WAZUH_API_URL
+          value: {{ quote .Values.dashboard.wazuhDashboard.env.wazuhApiUrl }}
+        - name: API_USERNAME
+          valueFrom:
+            secretKeyRef:
+              key: username
+              name: {{ include "wazuh.fullname" . }}-api-cred
+        - name: API_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: {{ include "wazuh.fullname" . }}-api-cred
+        - name: KUBERNETES_CLUSTER_DOMAIN
+          value: {{ quote .Values.kubernetesClusterDomain }}
+        image: "{{ .Values.dashboard.wazuhDashboard.image.repository }}:{{ .Values.dashboard.wazuhDashboard.image.tag | default .Chart.AppVersion }}"
+        name: wazuh-dashboard
+        ports:
+        - containerPort: 5601
+          name: dashboard
+        resources: {{- toYaml .Values.dashboard.wazuhDashboard.resources | nindent 10 }}
+        volumeMounts:
+        - mountPath: /usr/share/wazuh-dashboard/config/opensearch_dashboards.yml
+          name: config
+          subPath: opensearch_dashboards.yml
+        - mountPath: /usr/share/wazuh-dashboard/certs/cert.pem
+          name: dashboard-certs
+          readOnly: true
+          subPath: cert.pem
+        - mountPath: /usr/share/wazuh-dashboard/certs/key.pem
+          name: dashboard-certs
+          readOnly: true
+          subPath: key.pem
+        - mountPath: /usr/share/wazuh-dashboard/certs/root-ca.pem
+          name: dashboard-certs
+          readOnly: true
+          subPath: root-ca.pem
+      volumes:
+      - configMap:
+          name: {{ include "wazuh.fullname" . }}-dashboard-conf
+        name: config
+      - name: dashboard-certs
+        secret:
+          secretName: {{ include "wazuh.fullname" . }}-dashboard-certs

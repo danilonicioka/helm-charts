@@ -1,0 +1,24 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: nodecronjob
+spec:
+  schedule: "* * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          imagePullSecrets:
+            - name: mysecretocs
+          containers:
+          - name: nodecronjob
+            image: ucr.idc.ufpa.br/ocs_inventory-ufpa/2.8:cronjob-2.1
+            imagePullPolicy: Always
+            command:
+            - sh
+            - -c
+            - node cronjob.js
+          restartPolicy: OnFailure
+      parallelism: 3
+      completions: 1
+  concurrencyPolicy: Forbid

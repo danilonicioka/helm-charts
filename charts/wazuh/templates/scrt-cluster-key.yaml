@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ include "wazuh.fullname" . }}-cluster-key
+  labels:
+  {{- include "wazuh.labels" . | nindent 4 }}
+data:
+  key: {{ required "cluster.key is required" .Values.cred.cluster.key | b64enc }}

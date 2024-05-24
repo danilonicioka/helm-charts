@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ include "wazuh.fullname" . }}-dashboard-cred
+  labels:
+  {{- include "wazuh.labels" . | nindent 4 }}
+data:
+  password: {{ required "dashboard.password is required" .Values.cred.dashboard.password
+    | b64enc }}
+  username: {{ required "dashboard.username is required" .Values.cred.dashboard.username
+    | b64enc }}

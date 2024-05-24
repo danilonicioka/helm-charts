@@ -1,0 +1,7 @@
+.git/
+.github/
+components/
+docker-config/
+LICENSE
+.gitlab-ci.yml
+.gitlab/

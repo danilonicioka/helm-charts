@@ -1,0 +1,22 @@
+{{- if .Values.persistence.enabled }}
+{{- if not .Values.persistence.httpdconfdata.existingClaim }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "ocs.fullname" . }}-httpdconfdata
+spec:
+  {{- if .Values.persistence.storageClass }}
+  storageClassName: {{ .Values.persistence.storageClass }}
+  {{- end }}
+  accessModes:
+    - ReadWriteOnce
+  {{- if gt .Values.replicaCount 1.0 }}
+    - ReadWriteMany
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.persistence.httpdconfdata.storage | default "200Mi" }}
+...
+{{- end }}
+{{- end }}

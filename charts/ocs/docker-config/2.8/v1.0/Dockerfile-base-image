@@ -1,0 +1,68 @@
+FROM centos:centos7
+
+ARG YUM_FLAGS="-y"
+
+WORKDIR /tmp
+
+RUN yum ${YUM_FLAGS} install wget \
+    curl \
+    yum-utils \
+    tar \
+    make \
+    yum ${YUM_FLAGS} install epel-release ; \
+    wget https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm ; \
+    wget http://rpms.remirepo.net/enterprise/remi-release-7.rpm ; \
+    rpm -Uvh remi-release-7.rpm ; \
+    yum-config-manager --enable remi-php73 ; \
+    yum ${YUM_FLAGS} update ; \
+    yum ${YUM_FLAGS} install perl \
+    perl-XML-Simple \
+    perl-Compress-Zlib \
+    perl-DBI perl-DBD-MySQL \
+    perl-Net-IP \
+    perl-SOAP-Lite \
+    perl-Archive-Zip \
+    perl-Mojolicious \
+    perl-Plack \
+    perl-XML-Entities \
+    perl-Switch \
+    perl-Apache-DBI \
+    httpd \
+    php73-php \
+    php73-php-cli \
+    php73-php-ldap \
+    php73-php-gd \
+    php73-php-imap \
+    php73-php-pdo \
+    php73-php-pear \
+    php73-php-mbstring \
+    php73-php-intl \
+    php73-php-mysqlnd \
+    php73-php-xml \
+    php73-php-xmlrpc \
+    php73-php-pecl-mysql \
+    php73-php-pecl-mcrypt \
+    php73-php-pecl-apcu \
+    php73-php-json \
+    php73-php-fpm \
+    php73-php-soap \
+    php73-php-zip \
+    php73-php-opcache \
+    mod_ssl ; 
+
+RUN yum install -y wget make gcc zlib-devel openssl-devel \
+    cd /tmp && \
+    wget https://www.python.org/ftp/python/3.7.12/Python-3.7.12.tgz && \
+    tar -xf Python-3.7.12.tgz && \
+    rm Python-3.7.12.tgz && \
+    cd /tmp/Python-3.7.12 && \
+    ./configure --prefix=/usr/local --enable-optimizations && \
+    make -j8 && \
+    make altinstall && \
+    rm -rf /tmp/Python-3.7.12 && \
+    ln -s /usr/local/bin/python3.7 /usr/local/bin/python
+
+RUN yum install -y python3-pip && \
+    python -m pip install --upgrade pip && \
+    python -m pip install discord requests discord-webhook && \
+    pip install urllib3==1.26.6

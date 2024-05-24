@@ -1,0 +1,17 @@
+{{- if .Values.configldap.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "openldap.fullname" . }}-customconfigldap
+  labels:
+    app: {{ template "openldap.name" . }}
+    chart: {{ template "openldap.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+
+data:
+{{ toYaml .Values.configldap.script | indent 2 }}
+
+...
+{{- end }}
