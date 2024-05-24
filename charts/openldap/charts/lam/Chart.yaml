@@ -1,6 +1,6 @@
 apiVersion: v2
-appVersion: 8.0.1
+appVersion: "8.0.1"
 description: LDAP Account Manager
 name: lam
 type: application
-version: 0.2.1
+version: "0.2.1"
