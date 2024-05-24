@@ -10,7 +10,9 @@ maintainers:
 name: rt
 dependencies:
   - name: nginx
+    version: 0.1.1
   - name: postgresql
+    version: 0.2.3
 sources:
 - https://github.com/danilonicioka/helm-charts
 type: application
