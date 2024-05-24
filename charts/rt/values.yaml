@@ -111,7 +111,7 @@ postgresql:
     storageClass: ""
   postgresql:
     username: rtuser
-    password: g3ntl3m@n.p@ss
+    password: 123
     port: 5432
   scripts:
     dump:

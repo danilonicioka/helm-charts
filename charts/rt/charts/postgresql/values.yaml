@@ -191,3 +191,20 @@ resources: {}
 nodeSelector: {}
 
 tolerations: []
+
+persistence:
+  enabled: true
+  mountPath: /var/lib/postgresql/data
+  subPath: data
+  accessModes:  [ReadWriteOnce]
+  ## Storage Capacity for persistent volume
+  storage: 10Gi
+  existingClaim: ""
+  storageClass: ""
+postgresql:
+  username: rtuser
+  password: 123
+  port: 5432
+scripts:
+  dump:
+    psql -U rtuser rt < /root/rt-dump.sql
